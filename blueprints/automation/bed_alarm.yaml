@@ -1,0 +1,123 @@
+blueprint:
+  name: Bed alarm - rings until you are out of bed
+  description: >-
+    At the alarm time, if someone is in bed, run the ring action again and again until the bed has
+    stayed empty for a while. Getting back into bed starts it again. No snooze button: getting up is
+    the only way to stop it. A time limit stops it in any case.
+    Needs a bed occupancy sensor, for example the one from esphome-bed-presence.
+  domain: automation
+  source_url: https://github.com/Nico-1337/esphome-bed-presence/blob/main/blueprints/automation/bed_alarm.yaml
+  input:
+    bed_occupied:
+      name: Bed occupied sensor
+      description: Binary sensor that is on while someone is in bed.
+      selector:
+        entity:
+          filter:
+            - domain: binary_sensor
+    alarm_time:
+      name: Alarm time
+      selector:
+        time: {}
+    weekdays:
+      name: Days
+      default: [mon, tue, wed, thu, fri]
+      selector:
+        select:
+          multiple: true
+          options:
+            - { label: Monday, value: mon }
+            - { label: Tuesday, value: tue }
+            - { label: Wednesday, value: wed }
+            - { label: Thursday, value: thu }
+            - { label: Friday, value: fri }
+            - { label: Saturday, value: sat }
+            - { label: Sunday, value: sun }
+    ring_action:
+      name: Ring action
+      description: >-
+        What to do to wake you up: play a sound, turn on the lights, send a notification. It runs
+        again at every repeat while you are in bed.
+      selector:
+        action: {}
+    repeat_every:
+      name: Repeat every
+      default: 60
+      selector:
+        number:
+          min: 10
+          max: 600
+          unit_of_measurement: s
+    out_of_bed_for:
+      name: Out of bed for
+      description: How long the bed must stay empty to stop the alarm.
+      default: 60
+      selector:
+        number:
+          min: 5
+          max: 900
+          unit_of_measurement: s
+    max_minutes:
+      name: Give up after
+      default: 30
+      selector:
+        number:
+          min: 1
+          max: 180
+          unit_of_measurement: min
+    stop_action:
+      name: Stop action (optional)
+      description: What to do when the alarm stops, for example pause the speaker.
+      default: []
+      selector:
+        action: {}
+
+mode: single
+max_exceeded: silent
+
+triggers:
+  - trigger: time
+    at: !input alarm_time
+
+conditions:
+  - condition: time
+    weekday: !input weekdays
+  - condition: state
+    entity_id: !input bed_occupied
+    state: "on"
+
+actions:
+  - variables:
+      bed: !input bed_occupied
+      repeat_every: !input repeat_every
+      out_for: !input out_of_bed_for
+      max_minutes: !input max_minutes
+      started: "{{ as_timestamp(now()) }}"
+  - repeat:
+      sequence:
+        - if:
+            - condition: template
+              value_template: "{{ is_state(bed, 'on') }}"
+          then:
+            # In bed: ring, then wait for the bed to empty or for the next ring.
+            - choose: []
+              default: !input ring_action
+            - wait_template: "{{ is_state(bed, 'off') }}"
+              timeout:
+                seconds: "{{ repeat_every }}"
+          else:
+            # Out of bed: stay quiet, unless they get back in before out_for.
+            - wait_template: "{{ is_state(bed, 'on') }}"
+              timeout:
+                seconds: "{{ out_for }}"
+      until:
+        - condition: or
+          conditions:
+            - condition: template
+              value_template: >-
+                {{ is_state(bed, 'off')
+                   and as_timestamp(now()) - as_timestamp(states[bed].last_changed) >= out_for - 1 }}
+            - condition: template
+              value_template: "{{ as_timestamp(now()) - started >= max_minutes * 60 }}"
+  - choose: []
+    default: !input stop_action

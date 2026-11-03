@@ -1,0 +1,167 @@
+# Bed presence sensor: load cell(s) + HX711 + ESP8266, for Home Assistant.
+# Docs: https://github.com/Nico-1337/esphome-bed-presence
+#
+# Weight = (raw - tare - drift) * scale
+#   tare   set by the "Tare" button, kept across reboots
+#   scale  set by the "Calibrate" button (kg per raw count), kept across reboots
+#   drift  slow auto-zero while the bed is empty, never written to flash
+
+substitutions:
+  name: bed-presence
+  friendly_name: Bed
+  dout_pin: D2            # HX711 DT
+  clk_pin: D1             # HX711 SCK
+  update_interval: 1s
+  occupied_threshold: "20"  # kg, default value of the "Occupied threshold" number
+  delayed_on: 5s          # weight must stay above the threshold this long
+  delayed_off: 20s        # ...and below it this long (turning over in bed)
+  auto_zero_band: "2"     # kg: auto-zero only corrects drift smaller than this
+  auto_zero_every: 10min
+
+esphome:
+  name: ${name}
+  friendly_name: ${friendly_name}
+
+esp8266:
+  board: nodemcuv2
+  # Without this, tare and calibration are lost on a power cut (ESP8266 keeps them in RTC memory only).
+  restore_from_flash: true
+
+logger:
+
+api:
+  encryption:
+    key: !secret api_encryption_key
+
+ota:
+  # Works on every ESPHome version. Recent versions suggest `encryption: {}` instead of the password
+  # (it reuses the api key) and warn about the password.
+  - platform: esphome
+    password: !secret ota_password
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+  ap:
+    password: !secret fallback_ap_password
+
+captive_portal:
+
+globals:
+  - id: tare
+    type: float
+    restore_value: true
+    initial_value: "0"
+  - id: scale
+    type: float
+    restore_value: true
+    initial_value: "0"  # 0 = not calibrated: the weight stays unknown
+  - id: drift
+    type: float
+    restore_value: false
+    initial_value: "0"
+
+sensor:
+  - platform: hx711
+    id: bed_raw
+    name: Raw value
+    dout_pin: ${dout_pin}
+    clk_pin: ${clk_pin}
+    gain: 128
+    update_interval: ${update_interval}
+    entity_category: diagnostic
+    accuracy_decimals: 0
+    filters:
+      - median:
+          window_size: 5
+          send_every: 1
+    on_value:
+      - component.update: bed_weight
+
+  - platform: template
+    id: bed_weight
+    name: Weight
+    unit_of_measurement: kg
+    device_class: weight
+    state_class: measurement
+    accuracy_decimals: 1
+    update_interval: never
+    lambda: |-
+      if (id(scale) == 0 || isnan(id(bed_raw).state)) return NAN;
+      return (id(bed_raw).state - id(tare) - id(drift)) * id(scale);
+
+binary_sensor:
+  - platform: template
+    id: bed_occupied
+    name: Occupied
+    device_class: occupancy
+    lambda: |-
+      if (isnan(id(bed_weight).state)) return {};
+      return id(bed_weight).state > id(threshold).state;
+    filters:
+      - delayed_on: ${delayed_on}
+      - delayed_off: ${delayed_off}
+
+number:
+  - platform: template
+    id: threshold
+    name: Occupied threshold
+    unit_of_measurement: kg
+    entity_category: config
+    optimistic: true
+    restore_value: true
+    initial_value: ${occupied_threshold}
+    min_value: 1
+    max_value: 200
+    step: 1
+  - platform: template
+    id: known_weight
+    name: Calibration weight
+    unit_of_measurement: kg
+    entity_category: config
+    optimistic: true
+    restore_value: true
+    initial_value: 10
+    min_value: 0.5
+    max_value: 200
+    step: 0.5
+
+button:
+  - platform: template
+    name: Tare
+    entity_category: config
+    on_press:
+      - lambda: |-
+          if (isnan(id(bed_raw).state)) return;
+          id(tare) = id(bed_raw).state;
+          id(drift) = 0;
+          ESP_LOGI("bed", "Tare set to %.0f", id(tare));
+  - platform: template
+    name: Calibrate
+    entity_category: config
+    on_press:
+      - lambda: |-
+          float delta = id(bed_raw).state - id(tare) - id(drift);
+          if (isnan(delta) || fabs(delta) < 1000) {
+            ESP_LOGW("bed", "Calibration refused: tare first, then put the known weight on the bed");
+            return;
+          }
+          id(scale) = id(known_weight).state / delta;
+          ESP_LOGI("bed", "Scale set to %.9f kg per count", id(scale));
+  - platform: restart
+    name: Restart
+    entity_category: config
+
+interval:
+  # Load cells drift with temperature. While the bed is empty and the weight is close to zero,
+  # bring it back to zero. Not at boot: someone may be in bed after a power cut.
+  - interval: ${auto_zero_every}
+    then:
+      - if:
+          condition:
+            lambda: |-
+              return !id(bed_occupied).state && !isnan(id(bed_weight).state)
+                  && fabs(id(bed_weight).state) < ${auto_zero_band};
+          then:
+            - lambda: |-
+                id(drift) = id(bed_raw).state - id(tare);
