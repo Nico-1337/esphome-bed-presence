@@ -6,6 +6,8 @@ A load cell under the bed, an HX711 and an ESP8266 running ESPHome. Home Assista
 someone is in bed. The repository comes with a blueprint for an alarm that keeps ringing until you are
 actually out of bed.
 
+![From the bed to Home Assistant: load cell, HX711, ESP8266 running ESPHome, Home Assistant](docs/img/how-it-works.svg)
+
 > **Status:** this version has not been tested on hardware yet. It is a rewrite of a sensor I ran in
 > 2020 (see [Background](#background)). The firmware compiles for a NodeMCU (ESPHome 2026.10); please open an
 > issue if something behaves differently on your board.
@@ -28,9 +30,24 @@ ESPHome device (`esphome/bed-presence.yaml`):
   2 kg of zero, the zero follows the drift. This correction is never written to flash.
 - No tare at boot: after a power cut at night, someone may be in bed.
 
+![One night seen by the sensor: weight, threshold, occupancy and alarm (illustration)](docs/img/night.svg)
+
 Blueprint (`blueprints/automation/bed_alarm.yaml`): at the alarm time, if the bed is occupied, it runs
 your ring action every minute until the bed has stayed empty for a minute. Getting back into bed
 starts it again. It gives up after 30 minutes. All of these are settings.
+
+```mermaid
+flowchart TD
+  T([Alarm time, selected day]) --> C{Bed occupied?}
+  C -- no --> X([Nothing: you are already up])
+  C -- yes --> R[Ring action]
+  R --> W{Bed empty within<br/>Repeat every?}
+  W -- no --> R
+  W -- yes --> E{Still empty after<br/>Out of bed for?}
+  E -- "no, back in bed" --> R
+  E -- yes --> S([Stop action])
+  R -. Give up after .-> S
+```
 
 [![Import the blueprint](https://my.home-assistant.io/badges/blueprint_import.svg)](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https%3A%2F%2Fgithub.com%2FNico-1337%2Fesphome-bed-presence%2Fblob%2Fmain%2Fblueprints%2Fautomation%2Fbed_alarm.yaml)
 
@@ -42,6 +59,8 @@ starts it again. It gives up after 30 minutes. All of these are settings.
 - Load cells: one bar load cell under one bed leg, or four half-bridge cells (the ones from bathroom
   scales) under the four legs. See [docs/wiring.md](docs/wiring.md).
 - A USB power supply.
+
+![Wiring: load cell under one bed leg, HX711, NodeMCU](docs/img/wiring.svg)
 
 This is a presence sensor, not a scale. With one cell under one leg, the reading depends on where you
 lie. That is fine: it only needs to tell an empty bed from an occupied one.

@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1100 300" width="1100" height="300" font-family="Segoe UI, Helvetica, Arial, sans-serif">
+  <title>From the bed to Home Assistant</title>
+  <rect x="1" y="1" width="1098" height="298" rx="16" fill="#ffffff" stroke="#d0d7de" stroke-width="2"/>
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="#57606a"/></marker>
+  </defs>
+
+  <!-- Bed -->
+  <g>
+    <rect x="40" y="60" width="180" height="150" rx="14" fill="#f6f8fa" stroke="#d0d7de"/>
+    <rect x="62" y="104" width="136" height="26" rx="8" fill="#cfe3f5" stroke="#7aa7d6" stroke-width="2"/>
+    <rect x="62" y="130" width="136" height="8" fill="#8a6a4a"/>
+    <rect x="68" y="138" width="8" height="30" fill="#8a6a4a"/>
+    <rect x="184" y="138" width="8" height="24" fill="#8a6a4a"/>
+    <rect x="174" y="162" width="28" height="8" rx="2" fill="#c9ced6" stroke="#6e7781"/>
+    <text x="130" y="88" font-size="16" font-weight="700" text-anchor="middle" fill="#1f2328">Bed + load cell</text>
+    <text x="130" y="194" font-size="13" text-anchor="middle" fill="#57606a">a few mV per kg</text>
+  </g>
+  <line x1="222" y1="135" x2="268" y2="135" stroke="#57606a" stroke-width="3" marker-end="url(#arr)"/>
+
+  <!-- HX711 -->
+  <g>
+    <rect x="272" y="60" width="160" height="150" rx="14" fill="#1f7a4d"/>
+    <text x="352" y="100" font-size="17" font-weight="700" text-anchor="middle" fill="#ffffff">HX711</text>
+    <text x="352" y="130" font-size="13" text-anchor="middle" fill="#d1f0dc">amplifies and</text>
+    <text x="352" y="148" font-size="13" text-anchor="middle" fill="#d1f0dc">digitises</text>
+    <text x="352" y="184" font-size="14" text-anchor="middle" fill="#ffffff" font-family="Consolas, Menlo, monospace">raw 211200</text>
+  </g>
+  <line x1="434" y1="135" x2="480" y2="135" stroke="#57606a" stroke-width="3" marker-end="url(#arr)"/>
+
+  <!-- ESP8266 -->
+  <g>
+    <rect x="484" y="40" width="300" height="190" rx="14" fill="#1b2a3a"/>
+    <text x="634" y="72" font-size="17" font-weight="700" text-anchor="middle" fill="#ffffff">ESP8266 · ESPHome</text>
+    <text x="634" y="100" font-size="13" text-anchor="middle" fill="#c9d1d9" font-family="Consolas, Menlo, monospace">(raw − tare − drift) × scale</text>
+    <rect x="506" y="116" width="122" height="44" rx="8" fill="#26384d"/>
+    <text x="567" y="135" font-size="12" text-anchor="middle" fill="#8c959f">Weight</text>
+    <text x="567" y="152" font-size="15" font-weight="700" text-anchor="middle" fill="#ffffff">38.4 kg</text>
+    <rect x="640" y="116" width="122" height="44" rx="8" fill="#26384d"/>
+    <text x="701" y="135" font-size="12" text-anchor="middle" fill="#8c959f">Occupied</text>
+    <text x="701" y="152" font-size="15" font-weight="700" text-anchor="middle" fill="#3fb950">on</text>
+    <text x="634" y="186" font-size="12" text-anchor="middle" fill="#8c959f">Tare · Calibrate · Threshold</text>
+    <text x="634" y="204" font-size="12" text-anchor="middle" fill="#8c959f">set from Home Assistant</text>
+  </g>
+  <line x1="786" y1="135" x2="832" y2="135" stroke="#57606a" stroke-width="3" marker-end="url(#arr)"/>
+  <text x="809" y="122" font-size="12" text-anchor="middle" fill="#57606a">Wi-Fi</text>
+
+  <!-- Home Assistant -->
+  <g>
+    <rect x="836" y="60" width="224" height="150" rx="14" fill="#e8f2fd" stroke="#18bcf2" stroke-width="2"/>
+    <text x="948" y="96" font-size="17" font-weight="700" text-anchor="middle" fill="#1f2328">Home Assistant</text>
+    <text x="948" y="128" font-size="13" text-anchor="middle" fill="#1f2328">Bed alarm blueprint</text>
+    <text x="948" y="150" font-size="13" text-anchor="middle" fill="#57606a">rings until the bed</text>
+    <text x="948" y="168" font-size="13" text-anchor="middle" fill="#57606a">is empty</text>
+    <text x="948" y="194" font-size="13" text-anchor="middle" fill="#57606a">lights · speakers · phone</text>
+  </g>
+  <text x="550" y="270" font-size="13" text-anchor="middle" fill="#8c959f">Values shown are examples.</text>
+</svg>

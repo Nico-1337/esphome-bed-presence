@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1100 440" width="1100" height="440" font-family="Segoe UI, Helvetica, Arial, sans-serif">
+  <title>One night: weight, threshold, occupancy and the alarm (illustration)</title>
+  <rect x="1" y="1" width="1098" height="438" rx="16" fill="#ffffff" stroke="#d0d7de" stroke-width="2"/>
+  <text x="40" y="44" font-size="20" font-weight="700" fill="#1f2328">One night, seen by the sensor</text>
+  <text x="40" y="68" font-size="14" fill="#8c959f">Illustration, not real data.</text>
+
+  <!-- Axes -->
+  <g stroke="#eaeef2" stroke-width="1">
+    <line x1="120" y1="110" x2="1040" y2="110"/><line x1="120" y1="163" x2="1040" y2="163"/>
+    <line x1="120" y1="217" x2="1040" y2="217"/>
+  </g>
+  <line x1="120" y1="270" x2="1040" y2="270" stroke="#8c959f" stroke-width="1.5"/>
+  <g font-size="12" fill="#8c959f" text-anchor="end">
+    <text x="110" y="274">0 kg</text><text x="110" y="221">20</text><text x="110" y="167">40</text><text x="110" y="114">60</text>
+  </g>
+  <g font-size="12" fill="#8c959f" text-anchor="middle">
+    <text x="120" y="290">22:00</text><text x="304" y="290">00:00</text><text x="488" y="290">02:00</text>
+    <text x="672" y="290">04:00</text><text x="856" y="290">06:00</text><text x="1040" y="290">08:00</text>
+  </g>
+
+  <!-- Threshold -->
+  <line x1="120" y1="217" x2="1040" y2="217" stroke="#cf222e" stroke-width="2" stroke-dasharray="8 6"/>
+  <text x="1036" y="210" font-size="13" text-anchor="end" fill="#cf222e">Occupied threshold, 20 kg</text>
+
+  <!-- Weight -->
+  <path d="M120 270 L227 270 L232 168 L531 168 L534 228 L539 228 L542 168 L764 168 L767 184 L917 184 L921 270 L1040 270"
+        fill="none" stroke="#2f6fdb" stroke-width="3.5" stroke-linejoin="round"/>
+  <text x="250" y="158" font-size="13" fill="#2f6fdb">Weight</text>
+
+  <!-- Annotations -->
+  <g font-size="13" fill="#57606a">
+    <line x1="537" y1="232" x2="537" y2="252" stroke="#57606a"/>
+    <text x="545" y="250">turning over: a few seconds below,</text>
+    <text x="545" y="265">shorter than delayed_off, still occupied</text>
+    <line x1="765" y1="150" x2="765" y2="132" stroke="#57606a"/>
+    <text x="680" y="126">changing position: on the other side</text>
+    <text x="680" y="141">of the bed, less weight on the cell</text>
+  </g>
+
+  <!-- Occupied -->
+  <text x="110" y="327" font-size="13" text-anchor="end" fill="#1f2328">Occupied</text>
+  <rect x="120" y="314" width="920" height="18" rx="4" fill="#f6f8fa"/>
+  <rect x="236" y="314" width="683" height="18" rx="4" fill="#3fb950"/>
+  <text x="577" y="328" font-size="12" text-anchor="middle" fill="#ffffff" font-weight="700">on</text>
+
+  <!-- Alarm -->
+  <text x="110" y="367" font-size="13" text-anchor="end" fill="#1f2328">Alarm</text>
+  <rect x="120" y="354" width="920" height="18" rx="4" fill="#f6f8fa"/>
+  <rect x="902" y="354" width="17" height="18" rx="3" fill="#d4a72c"/>
+  <g font-size="13" fill="#57606a">
+    <text x="896" y="400" text-anchor="end">06:30 the bed is occupied: ring, and ring again every minute</text>
+    <text x="896" y="418" text-anchor="end">06:40 out of bed · 06:41 empty for 60 s: the alarm stops</text>
+    <line x1="902" y1="380" x2="902" y2="388" stroke="#57606a"/>
+  </g>
+</svg>

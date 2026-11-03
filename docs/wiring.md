@@ -1,5 +1,7 @@
 # Wiring
 
+![Wiring: load cell under one bed leg, HX711, NodeMCU](img/wiring.svg)
+
 ## HX711 to the ESP8266
 
 | HX711 | NodeMCU / D1 mini | Note |
@@ -27,9 +29,12 @@ Colours vary between makers: check the datasheet of your cell. If the weight goe
 lie down, nothing is wrong: calibration handles the sign. Swapping A+ and A− also flips it.
 
 Put the cell under the bed leg nearest to where you sleep, on a hard, flat support. The leg must rest
-on the cell only, not also on the floor.
+on the cell only, not also on the floor. Put a spacer of the same height as the cell under the
+other legs, so the bed stays level.
 
 ### Four half-bridge cells (3 wires, from bathroom scales)
+
+![Four half-bridge cells wired as one bridge](img/four-cells.svg)
 
 Four 50 kg half-bridge cells, one under each leg, form one full bridge. The easiest way is a small
 "load cell combinator" board, which takes the four cells and connects them for you. Without it:

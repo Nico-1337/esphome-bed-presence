@@ -6,6 +6,8 @@ Une cellule de charge sous le lit, un HX711 et un ESP8266 sous ESPHome : Home As
 quelqu'un est couché. Le dépôt fournit aussi un blueprint de réveil qui sonne tant qu'on n'est pas
 vraiment sorti du lit.
 
+![Du lit à Home Assistant : cellule de charge, HX711, ESP8266 sous ESPHome, Home Assistant](docs/img/how-it-works.svg)
+
 > **État :** cette version n'a pas encore été testée sur du matériel. C'est une réécriture d'un
 > capteur qui tournait chez moi en 2020 (voir [Origine](#origine)). Le firmware compile pour un NodeMCU
 > (ESPHome 2026.10) ; ouvrez une issue si quelque chose se comporte autrement sur votre carte.
@@ -30,9 +32,24 @@ Appareil ESPHome (`esphome/bed-presence.yaml`) :
   en flash.
 - Pas de tare au démarrage : après une coupure de courant la nuit, quelqu'un peut être couché.
 
+![Une nuit vue par le capteur : poids, seuil, présence et réveil (illustration)](docs/img/night.svg)
+
 Blueprint (`blueprints/automation/bed_alarm.yaml`) : à l'heure du réveil, si le lit est occupé, il
 lance votre action de sonnerie chaque minute jusqu'à ce que le lit soit resté vide une minute. Se
 recoucher la relance. Il abandonne au bout de 30 minutes. Tout cela se règle.
+
+```mermaid
+flowchart TD
+  T([Heure du réveil, jour choisi]) --> C{Lit occupé ?}
+  C -- non --> X([Rien : déjà debout])
+  C -- oui --> R[Action de sonnerie]
+  R --> W{Lit vide avant<br/>Repeat every ?}
+  W -- non --> R
+  W -- oui --> E{Toujours vide après<br/>Out of bed for ?}
+  E -- "non, recouché" --> R
+  E -- oui --> S([Action d'arrêt])
+  R -. Give up after .-> S
+```
 
 [![Importer le blueprint](https://my.home-assistant.io/badges/blueprint_import.svg)](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https%3A%2F%2Fgithub.com%2FNico-1337%2Fesphome-bed-presence%2Fblob%2Fmain%2Fblueprints%2Fautomation%2Fbed_alarm.yaml)
 
@@ -44,6 +61,10 @@ recoucher la relance. Il abandonne au bout de 30 minutes. Tout cela se règle.
 - Des cellules de charge : une cellule en barre sous un pied du lit, ou quatre demi-ponts (ceux des
   pèse-personnes) sous les quatre pieds. Voir [docs/wiring.md](docs/wiring.md).
 - Une alimentation USB.
+
+![Câblage : cellule sous un pied du lit, HX711, NodeMCU](docs/img/wiring.svg)
+
+Les schémas sont en anglais.
 
 C'est un capteur de présence, pas une balance. Avec une seule cellule sous un pied, la mesure dépend
 de l'endroit où l'on est couché. Ce n'est pas grave : il suffit de distinguer un lit vide d'un lit
